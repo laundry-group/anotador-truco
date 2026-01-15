@@ -1,0 +1,424 @@
+/* Papas fritas tally cartoon - diseño marco cuadrado */
+.papa {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 140ms, visibility 0s linear 140ms;
+}
+.papa.filled {
+  opacity: 1;
+  visibility: visible;
+  transition-delay: 0s;
+}
+.papa svg {
+  display: block;
+  filter: drop-shadow(0 2px 6px rgba(180,140,20,0.18));
+}
+
+/* Posiciones de las papafritas en el marco */
+.papa.papa-top {
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80%;
+  height: 40px;
+}
+.papa.papa-top img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.papa.papa-right {
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 80%;
+}
+.papa.papa-right img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.papa.papa-bottom {
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80%;
+  height: 40px;
+}
+.papa.papa-bottom img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.papa.papa-left {
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 80%;
+}
+.papa.papa-left img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.papa.papa-diag {
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%) rotate(-45deg);
+  width: 40px;
+  height: 120%;
+}
+.papa.papa-diag img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+:root{
+  --bg:#0f1720;
+  --card:#a51d1d;
+  --accent:#fffdf4;
+  --muted:#FFFFFF;
+  --surface:#0f1727;
+}
+
+*{box-sizing:border-box}
+
+/* Prevenir zoom en móviles */
+html {
+  -webkit-text-size-adjust: 100%;
+  -moz-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  touch-action: manipulation;
+}
+
+body, input, button {
+  touch-action: manipulation;
+}
+
+body{
+  font-family:Outfit, sans-serif;;
+  background:#a51d1d;
+  color:#e6eef6;
+  margin:0;
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.container{width:980px;max-width:96%;padding:5px}
+
+header{flex-direction:column;align-items:center;gap:10px;margin-bottom:5px;position:relative;width:100%;}
+@media (max-width:700px){
+  header {
+    flex-direction:row;
+    align-items:center;
+    justify-content:center;
+    gap:0;
+    width:100vw;
+    left:50%;
+    transform:translateX(-50%);
+    min-height:70px;
+    position:relative;
+    z-index: 20;
+  }
+  .boards::before {
+    display: none !important;
+  }
+  .logo {
+    margin:0 auto;
+    left:0; right:0;
+    position:relative;
+    z-index:2;
+  }
+  .menu-toggle {
+    position:absolute;
+    right:18px;
+    top:50%;
+    transform:translateY(-50%);
+    margin:0;
+    z-index:3;
+  }
+}
+.subtitle{color:var(--muted);margin:0}
+
+/* Header layout for menu toggle and logo */
+.header-left{display:flex;flex-direction:column}
+.header-right{display:flex;flex-direction:row;align-items:center;gap:10px}
+.logo{width:199px;height:75px;border-radius:12px;display:flex;align-items:center;justify-content:center;overflow:hidden;margin:0 auto;}
+.logo img{width:100%;height:100%;object-fit:contain;display:block}
+.menu-toggle{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted);padding:12px 16px;border-radius:8px;cursor:pointer;font-size:22px;min-width:48px;min-height:48px;display:inline-flex;align-items:center;justify-content:center;}
+
+/* Side menu */
+.side-menu{position:fixed;inset:0;display:none;z-index:1300}
+.side-menu[aria-hidden="false"]{display:block}
+.side-backdrop{position:absolute;inset:0;background:rgba(2,6,23,0.6)}
+.side-content{position:fixed;right:12px;top:36px;width:240px;background:#a51d1d;border-radius:12px;padding:12px;border:1px solid rgba(255,255,255,0.04);box-shadow:0 10px 30px rgba(0,0,0,0.6)}
+.menu-close{position:absolute;right:8px;top:8px;background:transparent;border:none;color:var(--muted);font-size:22px;cursor:pointer;min-width:48px;min-height:48px;display:inline-flex;align-items:center;justify-content:center;padding:0;}
+.side-list{list-style:none;padding:8px;margin:30px 0 0 0;display:flex;flex-direction:column;gap:10px}
+.menu-item{display:flex;align-items:center;gap:12px;padding:14px 12px;border-radius:10px;background:#fffdf4;border:1px solid rgba(255,255,255,0.04);color:#a51d1d;font-weight:700;cursor:pointer;width:100%;box-sizing:border-box;justify-content:flex-start;min-height:52px;}
+.menu-icon{display:inline-flex;width:34px;height:34px;border-radius:8px;background:var(--accent);color:#fff;align-items:center;justify-content:center;font-weight:800;flex:0 0 34px}
+
+.boards{display:flex;gap:10px;align-items:start}
+.team{padding:14px;border-radius:10px;display:flex;flex-direction:column;align-items:center;flex:1 1 48%;min-width:160px}
+.team-name{font-size:18px;padding:8px 10px;border-radius:8px;border:1px solid #FFFFFF;background:transparent;color:inherit;width:100%;text-align:center;margin-bottom:10px}
+.score{font-size:64px;font-weight:700;margin:8px 0}
+.controls{display:flex;gap:10px}
+/* Botones de controles (mismo tamaño en escritorio y móvil) */
+.controls button{
+  width:56px;
+  height:56px;
+  border-radius:50%;
+  padding:0;
+  font-size:40px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+}
+/* New team body groups title, score, tally and controls vertically */
+.team-body{display:flex;flex-direction:column;align-items:center;width:100%}
+.team .score{order:0}
+.team .controls{order:1;margin-top:8px;margin-bottom:8px}
+.team .tally{order:2}
+
+/* Tally (fosforos) */
+.tally{
+  width:100%;
+  max-width:340px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  padding:18px 0 12px 0;
+  margin:0 auto;
+  cursor:pointer;
+  position:relative;
+}
+.tally .hint{position:absolute;top:-18px;left:8px;right:8px;text-align:center;font-size:13px;color:var(--muted);pointer-events:none;z-index:3;margin-bottom:22px;}
+
+/* Each group is rendered as a square frame: top/right/bottom/left + diagonal */
+.tally{display:flex;flex-direction:column;align-items:center}
+/* simplified group: no box, just a container for lines */
+.tally .group {
+  width: 100%;
+  max-width: 150px;
+  aspect-ratio: 1/1;
+  position: relative;
+  background: transparent;
+  display: block;
+  margin: 0 auto 20px auto;
+}
+
+
+/* spacing between groups */
+.tally .group + .group{margin-top:1px}
+
+/* Línea divisoria a los 15 puntos */
+.tally-divider {
+  width: 100%;
+  height: 24px;
+  background-image: 
+    repeating-linear-gradient(
+      90deg,
+      #b71c1c 0px,
+      #b71c1c 12px,
+      #fff 12px,
+      #fff 24px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      #fff 0px,
+      #fff 12px,
+      #b71c1c 12px,
+      #b71c1c 24px
+    );
+  background-size: 24px 12px, 24px 12px;
+  background-position: 0 0, 0 12px;
+  background-repeat: repeat-x, repeat-x;
+  margin: 15px 0;
+  border-radius: 2px;
+}
+
+/* Ensure groups start at the top of the tally container */
+.tally{justify-content:flex-start}
+
+@media (max-width:700px) {
+  .tally {
+    max-width: 100vw;
+    padding: 6px;
+  }
+  .tally .group {
+    width: 100%;
+    max-width: 160px;
+    margin: 0 auto 1px auto;
+  }
+}
+
+button{background:var(--accent);border:none;padding:10px 14px;border-radius:10px;color:#a51d1d;cursor:pointer;font-weight:600}
+button:hover{opacity:.95}
+
+.actions{display:flex;gap:8px;align-items:center;margin-top:14px;flex-wrap:wrap}
+.actions label{display:flex;align-items:center;gap:8px}
+
+.history{margin-top:18px;background:rgba(255,255,255,0.02);padding:10px;border-radius:8px}
+#history-list{list-style:none;padding:0;margin:6px 0;max-height:200px;overflow:auto}
+#history-list li{padding:8px;border-bottom:1px solid rgba(255,255,255,0.03);font-size:14px}
+footer{margin-top:10px;color:var(--muted)}
+
+/* Guarda decorativa */
+.guarda {
+  width: 100%;
+  height: 60px;
+  background-image: 
+    repeating-linear-gradient(
+      90deg,
+      #b71c1c 0px,
+      #b71c1c 30px,
+      #fff 30px,
+      #fff 60px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      #fff 0px,
+      #fff 30px,
+      #b71c1c 30px,
+      #b71c1c 60px
+    );
+  background-size: 60px 30px, 60px 30px;
+  background-position: 0 0, 0 30px;
+  background-repeat: repeat-x, repeat-x;
+  margin: 15px 0 0 0;
+  border-radius: 4px;
+}
+
+/* Mobile adjustments */
+@media (max-width:700px){
+  /* Mobile: full-width, split 50/50 columns */
+  .container{padding:8px;max-width:100%;width:100%}
+  body{align-items:flex-start;justify-content:flex-start}
+  .boards{flex-direction:row;width:100%;gap:0;position:relative}
+  /* center dividing line */
+  .boards::before{content:'';position:absolute;left:50%;top:0;bottom:0;width:2px;background:linear-gradient(#e6d6bd,#f0e7d3);transform:translateX(-50%);opacity:0.6}
+  .team{padding:12px;flex:0 0 50%;min-width:50%;box-shadow:none;border-radius:0}
+  /* ensure team inner card (if any) maintains previous card look */
+  .team > .team-body{width:100%;display:flex;flex-direction:column;align-items:center}
+  .team > .team-body > .score{font-size:30px;margin:6px 0;color:var(--muted);order:0}
+  .team > .team-body > .controls{order:1;margin-top:6px;margin-bottom:6px}
+  .team > .team-body > .tally{width:86%;min-height:360px;margin:8px auto;border-radius:6px;order:2}
+  .team-name{font-size:14px;margin-bottom:8px}
+  .score{font-size:20px;margin:8px 0;color:var(--accent)}
+  /* controls grouped horizontally near bottom */
+  .controls{display:flex;gap:14px;justify-content:center;margin-top:8px}
+  .controls button{width:56px;height:56px;border-radius:50%;padding:0;font-size:40px;display:inline-flex;align-items:center;justify-content:center}
+  /* move actions out of view (menu used) */
+  .actions{display:none}
+  #history-list{max-height:220px}
+}
+
+/* Very small screens */
+/* Eliminado: reglas duplicadas/conflictivas para .tally .group en móvil */
+@media (max-width:700px){
+  body{align-items:flex-start;justify-content:flex-start}
+  .container{margin-top:5px}
+}
+
+/* Modal (history) styles */
+.modal{position:fixed;inset:0;display:none;align-items:flex-start;justify-content:center;z-index:1200}
+.modal[aria-hidden="false"]{display:flex}
+.modal-backdrop{position:absolute;inset:0;background:rgba(2,6,23,0.6);backdrop-filter:blur(4px)}
+.modal-content{position:relative;margin:32px auto;max-width:420px;width:92%;background:#fffdf4;border-radius:10px;padding:12px;border:1px solid rgba(255,255,255,0.06);box-shadow:0 10px 30px rgba(0,0,0,0.6)}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:6px 8px;border-bottom:1px solid rgba(255,255,255,0.03);margin-bottom:8px}
+.modal-header h3{margin:0;color:#a51d1d;font-size:18px}
+.modal-actions{display:flex;gap:8px;align-items:center}
+.modal-actions button{background:transparent;border:1px solid rgba(255,255,255,0.04);color:#a51d1d;padding:12px 14px;border-radius:8px;cursor:pointer;min-width:48px;min-height:48px;display:inline-flex;align-items:center;justify-content:center;font-size:18px;}
+.modal-actions button:hover{opacity:0.9}
+.modal-body{max-height:56vh;overflow:auto;padding:6px}
+.modal-body ul{list-style:none;padding:0;margin:0}
+.modal-body li{display:flex;align-items:center;gap:8px;padding:8px;border-bottom:1px solid rgba(255,255,255,0.02);font-size:13px}
+
+/* Tabs para historial */
+.history-tabs{display:flex;gap:4px;padding:4px 8px;border-bottom:2px solid rgba(165,29,29,0.2);justify-content:center}
+.history-tab{background:#fffdf4;border:1px solid #ddd;padding:8px 16px;color:#666;font-weight:600;font-size:14px;cursor:pointer;border-radius:6px 6px 0 0;transition:all 0.2s;min-height:44px;display:inline-flex;align-items:center;justify-content:center;box-shadow:0 2px 4px rgba(0,0,0,0.1)}
+.history-tab:hover{background:#f0f0f0;color:#333;border-color:#999}
+.history-tab.active{color:#fff;background:#b71c1c;border:2px solid #a51d1d;font-weight:700;box-shadow:0 4px 8px rgba(165,29,29,0.3);transform:translateY(-2px)}
+
+/* Tabla del historial */
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  background: #a51d1d;
+}
+.history-table thead {
+  position: sticky;
+  top: 0;
+  
+  z-index: 10;
+}
+.history-table th {
+  padding: 10px 8px;
+  text-align: center;
+  color: #f6e9d2;
+  font-weight: 700;
+  border-bottom: 2px solid rgba(255,255,255,0.1);
+  font-size: 12px;
+}
+.history-table td {
+  padding: 8px;
+  border-bottom: 1px solid rgba(255,255,255,0.02);
+}
+.history-table tbody tr:hover {
+  background: rgba(255,255,255,0.03);
+}
+.hist-time {
+  color: var(--muted);
+  font-size: 11px;
+  white-space: nowrap;
+}
+.hist-score {
+  text-align: center;
+  font-weight: 700;
+  color: #dbeef1;
+  font-size: 14px;
+}
+.hist-score.hist-active {
+  color: #ff6a00;
+  background: rgba(255,106,0,0.1);
+}
+.hist-action {
+  color: #9fa8b3;
+  font-size: 12px;
+}
+.hist-action.hist-sum {
+  color: #9fe6a5;
+}
+.hist-action.hist-rest {
+  color: #ff9987;
+}
+.hist-label{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700}
+.hist-sum{color:#9fe6a5}
+.hist-rest{color:#ff9987}
+.hist-meta{margin-left:auto;color:var(--muted);font-size:12px}
+
+/* Win modal specific styles */
+.win-content{max-width:380px;padding:18px;border-radius:12px}
+.win-content .win-header{border-bottom:1px solid rgba(255,255,255,0.03);padding-bottom:12px;margin-bottom:12px;}
+.win-content h3{margin:0;color:#a51d1d;text-align:left;}
+.win-body{padding:6px 4px;text-align:center;color:var(--muted)}
+.win-body p{margin:8px 0 14px 0;color:#a51d1d}
+.win-buttons{display:flex;gap:10px;justify-content:center}
+.btn-primary{background:var(--accent);color:#a51d1d;border:none;padding:14px 28px;border-radius:8px;cursor:pointer;font-weight:700;border:2px solid #a51d1d;min-height:52px;font-size:16px;}
+.btn-ghost{background:#b71c1c;border:1px solid rgba(255,255,255,0.06);color:#FFFFFF;padding:14px 28px;border-radius:8px;cursor:pointer;min-height:52px;font-size:16px;}
+.win-modal .modal-backdrop{background:rgba(2,6,23,0.6)}
+

@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Truco Garage" />
+  <meta name="theme-color" content="#a51d1d" />
+  <title>Anotador de Truco</title>
+  
+  <!-- Favicons -->
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32x32.png" />
+  <link rel="shortcut icon" href="assets/favicon-32x32.png" />
+  
+  <!-- iOS -->
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon-180x180.png" />
+  <link rel="apple-touch-icon" sizes="152x152" href="assets/apple-touch-icon-152x152.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon-180x180.png" />
+  <link rel="apple-touch-icon" sizes="167x167" href="assets/apple-touch-icon-167x167.png" />
+  
+  <!-- Android -->
+  <link rel="manifest" href="manifest.json" />
+  
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="container">
+    <header>
+      <div class="header-left">
+      </div>
+      <div class="header-right">
+        <div class="logo" title="Logo">
+          <img src="assets/truco_laundry_logo.png" alt="Logo">
+        </div>
+        <button id="menu-toggle" class="menu-toggle" aria-label="Abrir menú">☰</button>
+      </div>
+    </header>
+
+    <section class="boards">
+      <div class="team" data-team="0">
+        <div class="team-header">
+          <input class="team-name" value="NOSOTROS">
+        </div>
+        <div class="team-body">
+          <div class="score" id="score-0">0</div>
+          <div class="tally" data-team="0" id="tally-0"></div>
+          <div class="controls">
+            <button data-add="-1">−</button>
+            <button data-add="1">+</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="team" data-team="1">
+        <div class="team-header">
+          <input class="team-name" value="ELLOS">
+        </div>
+        <div class="team-body">
+          <div class="score" id="score-1">0</div>
+          <div class="tally" data-team="1" id="tally-1"></div>
+          <div class="controls">
+            <button data-add="-1">−</button>
+            <button data-add="1">+</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="actions">
+      <!-- meta de puntos removida por solicitud -->
+    </section>
+
+    <footer>
+      <div class="guarda"></div>
+    </footer>
+  </main>
+
+  <!-- History modal -->
+  <div id="history-modal" class="modal" aria-hidden="true">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3><img src="assets/var.svg" alt="" style="width:40px;height:40px;margin-right:8px;vertical-align:middle;">HISTORIAL</h3>
+        <div class="modal-actions">
+          <button id="close-history" title="Cerrar">✕</button>
+        </div>
+      </div>
+      <div class="history-tabs">
+        <button class="history-tab active" data-view="grouped">Agrupado</button>
+        <button class="history-tab" data-view="detailed">Detalle</button>
+      </div>
+      <div class="modal-body">
+        <table id="modal-history-list" class="history-table">
+          <thead>
+            <tr>
+              <th>ACCIÓN</th>
+              <th>HORA</th>
+              <th id="team-header-0">NOSOTROS</th>
+              <th id="team-header-1">ELLOS</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Win modal -->
+  <div id="win-modal" class="modal win-modal" aria-hidden="true">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content win-content">
+      <div class="win-header">
+        <h3 id="win-title">Ganó el equipo</h3>
+      </div>
+      <div class="win-body">
+        <p id="win-message">¿Jugamos de nuevo?</p>
+        <div class="win-buttons">
+          <button id="win-yes" class="btn-primary">Si</button>
+          <button id="win-no" class="btn-ghost">No</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reset confirmation modal -->
+  <div id="reset-modal" class="modal win-modal" aria-hidden="true">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content win-content">
+      <div class="win-header">
+        <h3>Reiniciar partida</h3>
+      </div>
+      <div class="win-body">
+        <p>¿Estás seguro de reiniciar los puntajes?</p>
+        <div class="win-buttons">
+          <button id="reset-yes" class="btn-primary">Si</button>
+          <button id="reset-no" class="btn-ghost">No</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Side menu -->
+  <div id="side-menu" class="side-menu" aria-hidden="true">
+    <div class="side-backdrop" data-role="backdrop"></div>
+    <nav class="side-content">
+      <button id="menu-close" class="menu-close">✕</button>
+      <ul class="side-list">
+        <li><button id="menu-history" class="menu-item"><span class="menu-icon"><img src="assets/var.svg" alt="Historial" style="width:40px;height:40px;"></span>IR AL VAR</button></li>
+        <li><button id="menu-reset" class="menu-item"><span class="menu-icon"><img src="assets/restart.png" alt="Reiniciar" style="width:40px;height:40px;"></span>REINICIAR</button></li>
+      </ul>
+    </nav>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
