@@ -9,6 +9,18 @@
   "orientation": "portrait",
   "icons": [
     {
+      "src": "assets/icon-44x44.png",
+      "sizes": "44x44",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icon-150x150.png",
+      "sizes": "150x150",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
       "src": "assets/logo_laundry_truco.png",
       "sizes": "152x152",
       "type": "image/png",
@@ -33,10 +45,25 @@
       "purpose": "any maskable"
     },
     {
+      "src": "assets/icon-310x310.png",
+      "sizes": "310x310",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
       "src": "assets/logo_laundry_truco.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "assets/screenshot-mobile.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Anotador de Truco en móvil"
     }
   ]
 }

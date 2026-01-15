@@ -1,45 +1,58 @@
 # Anotador de Truco 🎴
 
-Aplicación web progresiva (PWA) para anotar partidas de Truco con un diseño visual único que utiliza papas fritas animadas como sistema de conteo. Guarda el progreso automáticamente en `localStorage` del navegador.
+Aplicación web progresiva (PWA) para anotar partidas de Truco con un diseño visual único que utiliza papas fritas animadas como sistema de conteo. Completamente optimizada para móviles con soporte para dispositivos con notch, instalable en iOS, Android y Windows.
 
-## ✨ Características
+## ✨ Características Principales
 
 - **Sistema de conteo visual**: Las papas fritas forman marcos cuadrados (5 puntos por cuadrado) con su diagonal característica
+- **Historial con dos vistas**:
+  - **Agrupado**: Agrupa acciones que ocurrieron en una ventana de 30 segundos
+  - **Detalle**: Muestra cada acción individual con totales acumulados
 - **Diseño temático**: Logo personalizado "Laundry Truco" y guarda decorativa estilo tablero en 2 filas
 - **Persistencia automática**: El estado del juego se guarda en localStorage
-- **Historial tipo tabla**: Accede al VAR para revisar todos los movimientos con totales acumulados de ambos equipos
-- **Separador a los 15 puntos**: Línea divisoria visual cuando se alcanza la mitad del juego (15/30)
-- **Optimización móvil**: Sin zoom accidental, botones táctiles de 56px, viewport controlado
-- **PWA completa**: Instalable en iOS y Android con iconos personalizados
+- **Separador a los 15 puntos**: Línea divisoria con patrón de cuadrados (aparece al superar 15 puntos)
+- **Optimización móvil premium**:
+  - Safe area insets para dispositivos con notch (iPhone X+)
+  - Font-size mínimo 16px para evitar zoom automático en iOS
+  - Feedback táctil en todos los botones
+  - Modo landscape optimizado
+  - Modo alto contraste para visibilidad bajo luz solar
+- **PWA completa**: Instalable en iOS, Android y Windows con iconos optimizados
 - **Modal de victoria**: Notificación al alcanzar la meta de puntos
-- **Interfaz unificada**: Mismo tamaño de botones (56px) en desktop y móvil
+- **Interfaz unificada**: Botones táctiles de 56px en todas las plataformas
 
 ## 🎮 Uso
 
-1. Abrir `index.html` en un navegador moderno
-2. Opcional: usar Live Server o servir con:
+1. Abrir `index.html` en un navegador moderno o iniciar servidor local:
    ```bash
    python -m http.server 8000
    ```
-3. Personalizar nombres de equipos
+2. Acceder a `http://localhost:8000`
+3. Personalizar nombres de equipos (táctil en el nombre)
 4. Usar botones + y - para sumar/restar puntos
 5. Acceder al menú (☰) para:
-   - Ver historial completo (VAR)
+   - Ver historial completo con tabs "Agrupado" y "Detalle" (IR AL VAR)
    - Reiniciar la partida
 
 ## 📁 Estructura del Proyecto
 
 ```
 Truco/
-├── index.html          # Interfaz principal con meta tags PWA
-├── style.css           # Estilos, diseño visual y responsive
-├── app.js              # Lógica del juego y localStorage
-├── manifest.json       # Configuración PWA para Android/Chrome
+├── index.html              # Interfaz principal con meta tags PWA
+├── style.css               # Estilos, diseño visual y responsive
+├── app.js                  # Lógica del juego, localStorage y agrupación
+├── manifest.json           # Configuración PWA (Android/iOS/Windows)
+├── create-icons.ps1        # Script PowerShell para generar íconos
+├── create-favicon.ps1      # Script PowerShell para generar favicon
 ├── assets/
-│   ├── logo_laundry_truco.png         # Logo principal (nuevo)
+│   ├── logo_laundry_truco.png         # Logo principal
 │   ├── truco_laundry_logo.png         # Logo header
+│   ├── icon-44x44.png                 # Icono Windows barra de tareas
+│   ├── icon-150x150.png               # Icono Windows tile mediano
+│   ├── icon-310x310.png               # Icono Windows tile grande
 │   ├── apple-touch-icon-*.png         # Iconos iOS (152, 167, 180)
-│   ├── favicon-32x32.png              # Favicon navegador
+│   ├── favicon.ico                    # Favicon multi-tamaño
+│   ├── favicon-32x32.png              # Favicon navegador PNG
 │   ├── papafrita.svg                  # Diseño base de papa (vertical)
 │   ├── papafrita-horizontal.svg       # Papa horizontal para top/bottom
 │   ├── papafrita1-5.svg               # Variantes de papas (5 diseños)
@@ -50,43 +63,106 @@ Truco/
 
 ## 🎨 Sistema Visual
 
-- **Papas fritas**: Cada punto se representa con una papa frita en estilo cartoon
+### Papas Fritas (Tally System)
 - **Marco cuadrado**: 5 papas forman un marco (top, right, bottom, left + diagonal)
   - Papas horizontales para posiciones superior e inferior
   - Papas verticales para posiciones laterales y diagonal
-  - 40px de grosor en todas las posiciones
-- **Guarda decorativa**: Patrón de cuadrados rojos y blancos en 2 filas intercaladas (60px altura)
-- **Historial tipo tabla**: Columnas ACCIÓN, HORA, ELLOS, NOSOTROS con totales acumulados
-- **Colores**: Esquema de rojos (#A51d1d, #b71c1c) con detalles en naranja
+  - 40px de grosor, 150px tamaño de grupo
+  - Animaciones de fade-in (140ms)
+- **Separador a los 15 puntos**: 
+  - Patrón de cuadrados rojos y blancos (12px cada cuadrado)
+  - 24px de altura, solo aparece cuando el puntaje supera 15
 
-## 📱 PWA (Progressive Web App)
+### Historial (VAR)
+- **Tabs personalizados**:
+  - Activo: Fondo rojo oscuro (#b71c1c), texto blanco, elevado 2px
+  - Inactivo: Fondo crema (#fffdf4), texto gris (#666)
+  - Padding compacto: 8px 16px, min-height 44px
+- **Vista Agrupada**: Agrupa acciones en ventana de 30 segundos (mismo equipo, mismo signo)
+- **Vista Detalle**: Muestra cada acción con totales acumulados
+- **Tabla responsive**: 
+  - Desktop: font-size 13px
+  - Mobile: font-size 12px, padding reducido
+  - Columnas: ACCIÓN, HORA, team-1, team-2
 
-- **Instalable**: Funciona como app nativa en iOS y Android
-- **Iconos personalizados**: 5 tamaños (152x152, 167x167, 180x180, 192x192, 512x512)
-- **Sin zoom accidental**: viewport con maximum-scale=1, user-scalable=no
-- **Touch optimizado**: touch-action: manipulation en botones
-- **Standalone**: Se abre sin barra de navegador del browser
-- **Theme color**: #a51d1d para la barra de estado
+### Guarda Decorativa
+- Patrón de cuadrados rojos (#b71c1c) y blancos en 2 filas intercaladas
+- 60px altura total, cuadrados de 30px
+- Ubicada en el footer
+
+### Colores
+- Principal: #a51d1d
+- Acento: #b71c1c
+- Fondo claro: #fffdf4
+- Texto: #e6eef6 / #FFFFFF
+
+## 📱 PWA & Optimizaciones Móviles
+
+### Instalación Multi-Plataforma
+- **iOS**: Iconos 152x152, 167x167, 180x180
+- **Android**: Iconos 192x192, 512x512 (maskable)
+- **Windows**: Iconos 44x44, 150x150, 310x310
+- **Favicon**: .ico multi-tamaño (16, 32, 48)
+
+### Optimizaciones Premium
+- **Safe Area Insets**: Soporte completo para notch (iPhone X+, Android)
+- **Viewport**: `viewport-fit=cover` para pantalla completa
+- **Font-size**: Mínimo 16px en inputs (evita zoom automático iOS)
+- **Touch Actions**: `touch-action:manipulation` en elementos interactivos
+- **Feedback Táctil**: States `:active` con scale(0.95)
+- **Landscape Mode**: Optimización específica para horizontal
+- **Alto Contraste**: Borders más gruesos en modo high-contrast
+- **Performance**: `will-change` en animaciones para 60fps
+- **Modal Mobile**: Max-height 65vh, margins reducidos (16px)
+
+### Progressive Web App
+- **Standalone**: Se abre sin barra de navegador
+- **Theme color**: #a51d1d para barra de estado
+- **Background color**: #a51d1d
+- **Orientation**: Portrait preferred
+- **Screenshots**: Estructura preparada para stores
 
 ## 🔧 Tecnologías
 
-- HTML5 con meta tags PWA
-- CSS3 (Grid, Flexbox, gradientes, sticky positioning)
-- JavaScript Vanilla
-- SVG para gráficos vectoriales
-- localStorage API
-- Web App Manifest
+- **HTML5**: Meta tags PWA, semantic markup
+- **CSS3**: 
+  - Grid & Flexbox layouts
+  - Media queries (mobile, landscape, high-contrast)
+  - CSS Variables (custom properties)
+  - Sticky positioning (tabla header)
+  - Transform & transitions
+- **JavaScript Vanilla**:
+  - localStorage API
+  - Date manipulation
+  - Event delegation
+  - DOM manipulation
+- **SVG**: Gráficos vectoriales escalables
+- **Web APIs**: 
+  - Web App Manifest
+  - Service Worker ready
+  - Safe area insets
 
-## 📝 Notas
+## 📋 Características Técnicas
 
-- La meta predeterminada es 30 puntos
-- El historial registra cada movimiento con timestamp y totales acumulados
-- Los nombres de equipos por defecto son "Nosotros" y "Ellos"
-- El estado se guarda automáticamente con cada cambio
-- El historial muestra las columnas en orden: ACCIÓN, HORA, ELLOS, NOSOTROS
-- El divisor aparece automáticamente al llegar a 15 puntos
-- Botones de control de 56px × 56px en todos los dispositivos
-- Logo redimensionado a 199px × 75px (aumentado 15% respecto al original)
+### Historial Agrupado
+- **Ventana de tiempo**: 30 segundos
+- **Criterios de agrupación**: 
+  - Mismo equipo
+  - Mismo signo (+ o -)
+  - Dentro de la ventana temporal
+- **Comportamiento**: Siempre abre en vista "Agrupado" por defecto
+
+### Persistencia
+- Estado completo guardado en localStorage
+- Historia de movimientos con timestamps
+- Nombres de equipos personalizados
+- Recuperación automática al recargar
+
+### Responsive Design
+- **Desktop**: 980px max-width, layout horizontal
+- **Mobile (<700px)**: Split 50/50, controles optimizados
+- **Landscape (<900px)**: Max-height 85vh con scroll
+- **Touch targets**: Mínimo 44px (W3C guidelines)
 
 ## 🚀 Instalación como PWA
 
@@ -101,3 +177,61 @@ Truco/
 2. Tocar el menú (⋮)
 3. Seleccionar "Instalar aplicación" o "Añadir a pantalla de inicio"
 4. Confirmar instalación
+
+### Windows 10/11 (Edge)
+1. Abrir en Microsoft Edge
+2. Click en el menú (⋯)
+3. Seleccionar "Aplicaciones" → "Instalar este sitio como aplicación"
+4. Confirmar instalación
+5. La app aparecerá en el Menú Inicio con íconos optimizados
+
+## 🛠️ Scripts de Utilidad
+
+### Generar Íconos PWA
+```powershell
+Get-Content .\create-icons.ps1 | powershell -
+```
+Genera automáticamente:
+- icon-44x44.png (Windows taskbar)
+- icon-150x150.png (Windows medium tile)
+- icon-310x310.png (Windows large tile)
+
+### Generar Favicon
+```powershell
+Get-Content .\create-favicon.ps1 | powershell -
+```
+Crea favicon.ico de 32x32 con alta calidad.
+
+## 📝 Notas Adicionales
+
+- **Meta predeterminada**: 30 puntos
+- **Nombres por defecto**: "NOSOTROS" y "ELLOS"
+- **Guardado automático**: Cada acción se persiste inmediatamente
+- **Separador dinámico**: Solo aparece cuando algún equipo supera 15 puntos
+- **Historial inteligente**: Default siempre en vista "Agrupado"
+- **Timestamps**: Formato HH:MM:SS para cada acción
+- **Optimización**: Animaciones a 60fps con will-change
+- **Accesibilidad**: Min-width 44px en todos los touch targets
+
+## 🎯 Próximas Mejoras Potenciales
+
+- [ ] Service Worker para funcionamiento offline completo
+- [ ] Sincronización entre dispositivos
+- [ ] Estadísticas de partidas jugadas
+- [ ] Temas personalizables (claro/oscuro)
+- [ ] Sonidos de feedback
+- [ ] Modo multijugador en tiempo real
+- [ ] Export/Import de historial
+- [ ] Screenshots para manifest.json
+
+## 🤝 Contribuciones
+
+Este es un proyecto personal. Si encuentras bugs o tienes sugerencias, por favor abre un issue.
+
+## 📄 Licencia
+
+Este proyecto está bajo uso personal/educativo.
+
+---
+
+**Desarrollado con ❤️ por Laundry Garage** | Truco Score Keeper v2.0
