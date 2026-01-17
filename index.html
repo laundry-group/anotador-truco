@@ -48,18 +48,41 @@
         // Mostrar botón de instalación si existe
         const installBtn = document.getElementById('install-pwa-btn');
         if (installBtn) {
-          installBtn.style.display = 'inline-flex';
+          installBtn.style.display = 'flex';
           installBtn.addEventListener('click', async () => {
             if (deferredPrompt) {
               deferredPrompt.prompt();
               const result = await deferredPrompt.userChoice;
               console.log('Usuario decidió:', result.outcome);
+              if (result.outcome === 'accepted') {
+                console.log('✅ Usuario aceptó instalar');
+              }
               deferredPrompt = null;
               installBtn.style.display = 'none';
             }
           });
         }
       });
+      
+      // Para iOS Safari: mostrar el botón después de 3 segundos si no se disparó beforeinstallprompt
+      setTimeout(() => {
+        const installBtn = document.getElementById('install-pwa-btn');
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+        
+        // Si es iOS, no está instalado, y no se mostró el botón, mostrar instrucciones
+        if (isIOS && !isStandalone && installBtn && installBtn.style.display === 'none') {
+          console.log('📱 iOS detectado - mostrando instrucciones');
+          installBtn.innerHTML = '<span style="font-size:20px;">📲</span><span>Instalar: Compartir → Añadir a inicio</span>';
+          installBtn.style.display = 'flex';
+          installBtn.style.background = '#007aff';
+          installBtn.style.pointerEvents = 'none'; // No clickeable, solo informativo
+        }
+        // Si no es iOS y el botón sigue oculto, puede que la PWA ya esté instalada
+        else if (!isStandalone && installBtn && installBtn.style.display === 'none' && !deferredPrompt) {
+          console.log('ℹ️ PWA ya instalada o navegador no soporta instalación');
+        }
+      }, 3000);
 
       // Detectar cuando la PWA se instaló exitosamente
       window.addEventListener('appinstalled', () => {
@@ -206,7 +229,7 @@
 
     <section class="actions">
       <!-- meta de puntos removida por solicitud -->
-      <button id="install-pwa-btn" style="display:none;background:#4caf50;color:#fff;border:none;padding:12px 24px;border-radius:8px;font-weight:700;cursor:pointer;font-size:14px;margin:16px auto;box-shadow:0 4px 8px rgba(0,0,0,0.2);transition:all 0.3s;display:flex;align-items:center;justify-content:center;gap:8px;max-width:300px;">
+      <button id="install-pwa-btn" style="display:none;background:#4caf50;color:#fff;border:none;padding:12px 24px;border-radius:8px;font-weight:700;cursor:pointer;font-size:14px;margin:16px auto;box-shadow:0 4px 8px rgba(0,0,0,0.2);transition:all 0.3s;align-items:center;justify-content:center;gap:8px;max-width:300px;">
         <span style="font-size:20px;">📱</span>
         <span>Agregar a inicio</span>
       </button>

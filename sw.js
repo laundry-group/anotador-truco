@@ -1,7 +1,7 @@
 // Service Worker para Anotador de Truco
 // Versión: 2.1.0
 
-const CACHE_NAME = 'truco-laundry-v2.1.0';
+const CACHE_NAME = 'truco-laundry-v2.1.1';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
