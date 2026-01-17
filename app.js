@@ -161,29 +161,27 @@ function renderDetailedHistory(tbody){
 }
 
 function renderGroupedHistory(tbody){
-  // Agrupar puntos que ocurrieron en 30 segundos
-  // No agrupar sumas con restas
+  // Agrupar acciones que ocurrieron en una ventana de 60 segundos
+  // Mostrar ambos equipos en la misma línea
   const historyReversed = [...state.history].reverse()
   const groups = []
   let totals = [0, 0]
   
-  // Calcular totales y crear grupos
-  historyReversed.forEach((h, idx) => {
+  // Calcular totales y crear grupos por ventana de tiempo
+  historyReversed.forEach((h) => {
     totals[h.team] += h.pts
     
-    // Buscar si puede unirse a un grupo existente
+    // Buscar si puede unirse a un grupo existente (ventana de 60 segundos)
     let joined = false
     for(let i = groups.length - 1; i >= 0; i--) {
       const g = groups[i]
-      const timeDiff = Math.abs(h.time - g.lastTime) / 1000 // en segundos
+      const timeDiff = Math.abs(h.time - g.startTime) / 1000 // en segundos
       
-      // Agrupar si: mismo equipo, mismo signo (suma o resta), y dentro de 30 segundos
-      if(g.team === h.team && 
-         Math.sign(g.totalPts) === Math.sign(h.pts) && 
-         timeDiff <= 30) {
-        g.totalPts += h.pts
-        g.count++
-        g.lastTime = h.time
+      // Agrupar si está dentro de 60 segundos
+      if(timeDiff <= 60) {
+        // Agregar puntos al equipo correspondiente
+        g.teams[h.team] += h.pts
+        g.endTime = h.time
         g.totalsSnapshot = [totals[0], totals[1]]
         joined = true
         break
@@ -192,30 +190,42 @@ function renderGroupedHistory(tbody){
     
     // Si no se unió a ningún grupo, crear uno nuevo
     if(!joined) {
-      groups.push({
-        team: h.team,
-        totalPts: h.pts,
-        count: 1,
-        time: h.time,
-        lastTime: h.time,
+      const newGroup = {
+        teams: [0, 0], // [equipo0, equipo1]
+        startTime: h.time,
+        endTime: h.time,
         totalsSnapshot: [totals[0], totals[1]]
-      })
+      }
+      newGroup.teams[h.team] = h.pts
+      groups.push(newGroup)
     }
   })
   
   // Renderizar grupos del más reciente al más antiguo
   groups.reverse().forEach(g => {
     const tr = document.createElement('tr')
-    const t = new Date(g.time).toLocaleTimeString()
-    const teamName = state.teams[g.team]?.name.toUpperCase() || `Equipo ${g.team+1}`
-    const ptsText = g.totalPts > 0 ? `+${g.totalPts}` : `${g.totalPts}`
+    const t = new Date(g.endTime).toLocaleTimeString()
+    
+    // Construir texto de acción mostrando ambos equipos
+    const team0Name = state.teams[0]?.name.toUpperCase() || 'EQUIPO 1'
+    const team1Name = state.teams[1]?.name.toUpperCase() || 'EQUIPO 2'
+    
+    let actionParts = []
+    if(g.teams[0] !== 0) {
+      const pts0 = g.teams[0] > 0 ? `+${g.teams[0]}` : `${g.teams[0]}`
+      actionParts.push(`${team0Name} ${pts0}`)
+    }
+    if(g.teams[1] !== 0) {
+      const pts1 = g.teams[1] > 0 ? `+${g.teams[1]}` : `${g.teams[1]}`
+      actionParts.push(`${team1Name} ${pts1}`)
+    }
+    
+    const actionText = actionParts.length > 0 ? actionParts.join(' | ') : 'Sin cambios'
     
     // Columna acción
     const tdAction = document.createElement('td')
-    tdAction.textContent = `${teamName} ${ptsText}`
+    tdAction.textContent = actionText
     tdAction.className = 'hist-action'
-    if(g.totalPts > 0) tdAction.classList.add('hist-sum')
-    else tdAction.classList.add('hist-rest')
     
     // Columna hora
     const tdTime = document.createElement('td')
@@ -226,13 +236,13 @@ function renderGroupedHistory(tbody){
     const tdTeam0 = document.createElement('td')
     tdTeam0.textContent = g.totalsSnapshot[0]
     tdTeam0.className = 'hist-score'
-    if(g.team === 0) tdTeam0.classList.add('hist-active')
+    if(g.teams[0] !== 0) tdTeam0.classList.add('hist-active')
     
     // Columna equipo 1
     const tdTeam1 = document.createElement('td')
     tdTeam1.textContent = g.totalsSnapshot[1]
     tdTeam1.className = 'hist-score'
-    if(g.team === 1) tdTeam1.classList.add('hist-active')
+    if(g.teams[1] !== 0) tdTeam1.classList.add('hist-active')
     
     tr.appendChild(tdAction)
     tr.appendChild(tdTime)

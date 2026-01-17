@@ -6,7 +6,7 @@ Aplicación web progresiva (PWA) para anotar partidas de Truco con un diseño vi
 
 - **Sistema de conteo visual**: Las papas fritas forman marcos cuadrados (5 puntos por cuadrado) con su diagonal característica
 - **Historial con dos vistas**:
-  - **Agrupado**: Agrupa acciones que ocurrieron en una ventana de 30 segundos
+  - **Agrupado**: Agrupa acciones de ambos equipos en ventanas de 60 segundos (una línea por minuto)
   - **Detalle**: Muestra cada acción individual con totales acumulados
 - **Diseño temático**: Logo personalizado "Laundry Truco" y guarda decorativa estilo tablero en 2 filas
 - **Persistencia automática**: El estado del juego se guarda en localStorage
@@ -41,6 +41,7 @@ Truco/
 ├── index.html              # Interfaz principal con meta tags PWA
 ├── style.css               # Estilos, diseño visual y responsive
 ├── app.js                  # Lógica del juego, localStorage y agrupación
+├── sw.js                   # Service Worker (cache, offline, actualizaciones)
 ├── manifest.json           # Configuración PWA (Android/iOS/Windows)
 ├── create-icons.ps1        # Script PowerShell para generar íconos
 ├── create-favicon.ps1      # Script PowerShell para generar favicon
@@ -78,7 +79,7 @@ Truco/
   - Activo: Fondo rojo oscuro (#b71c1c), texto blanco, elevado 2px
   - Inactivo: Fondo crema (#fffdf4), texto gris (#666)
   - Padding compacto: 8px 16px, min-height 44px
-- **Vista Agrupada**: Agrupa acciones en ventana de 30 segundos (mismo equipo, mismo signo)
+- **Vista Agrupada**: Agrupa acciones de ambos equipos en ventanas de 60 segundos (formato: "EQUIPO1 +2 | EQUIPO2 -1")
 - **Vista Detalle**: Muestra cada acción con totales acumulados
 - **Tabla responsive**: 
   - Desktop: font-size 13px
@@ -117,6 +118,9 @@ Truco/
 
 ### Progressive Web App
 - **Standalone**: Se abre sin barra de navegador
+- **Offline Ready**: Funciona completamente sin internet
+- **Auto-Update**: Detecta y notifica nuevas versiones
+- **Cache Inteligente**: Carga instantánea después de primera visita
 - **Theme color**: #a51d1d para barra de estado
 - **Background color**: #a51d1d
 - **Orientation**: Portrait preferred
@@ -145,11 +149,11 @@ Truco/
 ## 📋 Características Técnicas
 
 ### Historial Agrupado
-- **Ventana de tiempo**: 30 segundos
+- **Ventana de tiempo**: 60 segundos
 - **Criterios de agrupación**: 
-  - Mismo equipo
-  - Mismo signo (+ o -)
-  - Dentro de la ventana temporal
+  - Todas las acciones dentro de la misma ventana de 60 segundos
+  - Muestra ambos equipos en una sola línea (ej: "NOSOTROS +2 | ELLOS -1")
+  - Resalta con color los equipos que tuvieron actividad
 - **Comportamiento**: Siempre abre en vista "Agrupado" por defecto
 
 ### Persistencia
@@ -215,7 +219,8 @@ Crea favicon.ico de 32x32 con alta calidad.
 
 ## 🎯 Próximas Mejoras Potenciales
 
-- [ ] Service Worker para funcionamiento offline completo
+- [x] Service Worker para funcionamiento offline completo ✅
+- [x] Sistema de actualización automática con notificaciones ✅
 - [ ] Sincronización entre dispositivos
 - [ ] Estadísticas de partidas jugadas
 - [ ] Temas personalizables (claro/oscuro)
@@ -223,6 +228,30 @@ Crea favicon.ico de 32x32 con alta calidad.
 - [ ] Modo multijugador en tiempo real
 - [ ] Export/Import de historial
 - [ ] Screenshots para manifest.json
+
+## 🔄 Sistema de Actualizaciones
+
+### Service Worker Implementado
+La app incluye un Service Worker completo que:
+- **Cache-First**: Recursos cargados desde cache para máxima velocidad
+- **Funcionamiento Offline**: La app funciona sin conexión
+- **Auto-actualización**: Detecta nuevas versiones automáticamente cada 60 segundos
+- **Banner de notificación**: Muestra aviso cuando hay actualización disponible
+- **Actualización instantánea**: Un click y la app se actualiza sin perder datos
+
+### ¿Cómo funciona?
+1. **Primera visita**: Descarga y cachea todos los recursos
+2. **Visitas posteriores**: Carga instantánea desde cache
+3. **Nueva versión**: Detecta cambios y muestra banner de actualización
+4. **Usuario decide**: Click en "Actualizar ahora" o "Más tarde"
+5. **Actualización**: Refresco automático con la nueva versión
+
+### Para Desarrolladores
+Al hacer cambios, **ACTUALIZAR la versión** en `sw.js`:
+```javascript
+const CACHE_NAME = 'truco-laundry-v2.0.1'; // Incrementar versión
+```
+Esto asegura que los usuarios obtengan la nueva versión automáticamente.
 
 ## 🤝 Contribuciones
 
