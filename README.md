@@ -5,20 +5,25 @@ Aplicación web progresiva (PWA) para anotar partidas de Truco con un diseño vi
 ## ✨ Características Principales
 
 - **Sistema de conteo visual**: Las papas fritas forman marcos cuadrados (5 puntos por cuadrado) con su diagonal característica
+- **Pantalla de bienvenida**: Aparece siempre al iniciar la app con opciones de ver historial o comenzar nueva partida
+- **Seguimiento de duración**: Cada partida registra su tiempo de duración en minutos, visible al terminar y en el historial
+- **Estadísticas simplificadas**: Muestra las últimas 5 partidas con detalles completos (fecha, hora, puntajes, duración)
+- **Layout optimizado**: Header, nombres y controles fijos, scroll solo en área de tally para mejor usabilidad
 - **Historial con dos vistas**:
   - **Agrupado**: Agrupa acciones de ambos equipos en ventanas de 60 segundos (una línea por minuto)
   - **Detalle**: Muestra cada acción individual con totales acumulados
-- **Diseño temático**: Logo personalizado "Laundry Truco" y guarda decorativa estilo tablero en 2 filas
+- **Diseño temático**: Logo personalizado "Laundry Truco" (216px desktop, 168px móvil)
 - **Persistencia automática**: El estado del juego se guarda en localStorage
 - **Separador a los 15 puntos**: Línea divisoria con patrón de cuadrados (aparece al superar 15 puntos)
+- **Nombres en mayúsculas**: Los nombres de equipos se convierten automáticamente a UPPERCASE
 - **Optimización móvil premium**:
-  - Safe area insets para dispositivos con notch (iPhone X+)
+  - Safe area insets para dispositivos con notch (iPhone X+) en modales
   - Font-size mínimo 16px para evitar zoom automático en iOS
-  - Feedback táctil en todos los botones
+  - Feedback táctil en todos los botones (56x56px)
   - Modo landscape optimizado
   - Modo alto contraste para visibilidad bajo luz solar
 - **PWA completa**: Instalable en iOS, Android y Windows con iconos optimizados
-- **Modal de victoria**: Notificación al alcanzar la meta de puntos
+- **Modal de victoria**: Notificación con duración de la partida al alcanzar la meta
 - **Interfaz unificada**: Botones táctiles de 56px en todas las plataformas
 
 ## 🎮 Uso
@@ -28,11 +33,17 @@ Aplicación web progresiva (PWA) para anotar partidas de Truco con un diseño vi
    python -m http.server 8000
    ```
 2. Acceder a `http://localhost:8000`
-3. Personalizar nombres de equipos (táctil en el nombre)
-4. Usar botones + y - para sumar/restar puntos
-5. Acceder al menú (☰) para:
+3. **Pantalla de bienvenida**:
+   - Ver "Últimas Partidas" 🏆 para revisar el historial
+   - Presionar "Empezar" para iniciar una nueva partida (resetea puntajes)
+4. Personalizar nombres de equipos (se convierten automáticamente a MAYÚSCULAS)
+5. Usar botones + y - para sumar/restar puntos
+6. Scroll en el área de tally cuando hay muchos puntos
+7. Acceder al menú (☰) para:
    - Ver historial completo con tabs "Agrupado" y "Detalle" (IR AL VAR)
-   - Reiniciar la partida
+   - Ver últimas 5 partidas con duración (🏆 ÚLTIMAS PARTIDAS)
+   - Reiniciar la partida (🔄 REINICIAR)
+8. Al terminar una partida, se muestra el tiempo de duración en el modal de victoria
 
 ## 📁 Estructura del Proyecto
 
@@ -64,6 +75,22 @@ Truco/
 
 ## 🎨 Sistema Visual
 
+### Pantalla de Bienvenida
+- **Logo**: 216px en desktop, 168px en móvil con animación bounce
+- **Botones**: Instalar PWA, Ver últimas partidas (🏆), Empezar
+- **Aparece siempre**: Al recargar o entrar a la app
+- **z-index**: 10000 para estar sobre todo el contenido
+
+### Layout con Scroll Optimizado
+- **Header fijo**: Siempre visible en la parte superior
+- **Nombres fijos**: Los inputs de nombres permanecen accesibles
+- **Puntajes fijos**: Score siempre visible
+- **Controles fijos**: Botones +/- siempre accesibles
+- **Tally scrolleable**: Solo el área de papas fritas hace scroll
+  - Scrollbar personalizado semitransparente
+  - Desktop: max-height calc(100vh - 350px)
+  - Mobile: flex 1 con min-height 0
+
 ### Papas Fritas (Tally System)
 - **Marco cuadrado**: 5 papas forman un marco (top, right, bottom, left + diagonal)
   - Papas horizontales para posiciones superior e inferior
@@ -73,6 +100,7 @@ Truco/
 - **Separador a los 15 puntos**: 
   - Patrón de cuadrados rojos y blancos (12px cada cuadrado)
   - 24px de altura, solo aparece cuando el puntaje supera 15
+  - flex-shrink: 0 para mantener tamaño en scroll
 
 ### Historial (VAR)
 - **Tabs personalizados**:
@@ -86,10 +114,16 @@ Truco/
   - Mobile: font-size 12px, padding reducido
   - Columnas: ACCIÓN, HORA, team-1, team-2
 
-### Guarda Decorativa
-- Patrón de cuadrados rojos (#b71c1c) y blancos en 2 filas intercaladas
-- 60px altura total, cuadrados de 30px
-- Ubicada en el footer
+### Estadísticas (🏆 Últimas Partidas)
+- **Simplificadas**: Solo muestra las últimas 5 partidas
+- **Match cards**: Fondo #a51d1d con texto blanco
+- **Información por partida**:
+  - Fecha y hora
+  - Ganador 🏆 con puntaje
+  - Perdedor con puntaje
+  - Duración ⏱️ en minutos
+- **Scrolleable**: Max-height 400px (desktop) / 300px (móvil)
+- **Scrollbar personalizado**: Diseño coherente con el tema rojo
 
 ### Colores
 - Principal: #a51d1d
@@ -106,15 +140,20 @@ Truco/
 - **Favicon**: .ico multi-tamaño (16, 32, 48)
 
 ### Optimizaciones Premium
-- **Safe Area Insets**: Soporte completo para notch (iPhone X+, Android)
+- **Safe Area Insets**: Soporte completo para notch en modales (iPhone X+, Android)
+  - Modales: `margin-top: max(32px, env(safe-area-inset-top))`
+  - Mobile: Ajuste automático con safe-area-inset-top y bottom
 - **Viewport**: `viewport-fit=cover` para pantalla completa
 - **Font-size**: Mínimo 16px en inputs (evita zoom automático iOS)
+- **Touch Targets**: Todos los botones 56x56px (menú, cerrar, controles)
 - **Touch Actions**: `touch-action:manipulation` en elementos interactivos
 - **Feedback Táctil**: States `:active` con scale(0.95)
+- **Botones con hover**: Efectos visuales en :hover y :active
 - **Landscape Mode**: Optimización específica para horizontal
 - **Alto Contraste**: Borders más gruesos en modo high-contrast
 - **Performance**: `will-change` en animaciones para 60fps
-- **Modal Mobile**: Max-height 65vh, margins reducidos (16px)
+- **Modal Mobile**: Max-height ajustado con safe-area, z-index 10001
+- **Layout Móvil**: Estructura flex con scroll solo en tally (height: 100vh)
 
 ### Progressive Web App
 - **Standalone**: Se abre sin barra de navegador
@@ -148,6 +187,21 @@ Truco/
 
 ## 📋 Características Técnicas
 
+### Sistema de Duración de Partidas
+- **Tracking automático**: Se registra `startTime` al iniciar/resetear partida
+- **Cálculo al terminar**: `Math.round((endTime - startTime) / 60000)` para obtener minutos
+- **Almacenamiento**: Campo `duration` en cada match del historial
+- **Visualización**: 
+  - Modal de victoria: "⏱️ Duración: X minutos"
+  - Match cards: "⏱️ X minutos" bajo el nombre del perdedor
+- **Formato inteligente**: "1 minuto" (singular) vs "X minutos" (plural)
+
+### Pantalla de Bienvenida
+- **Aparece siempre**: No usa localStorage para recordar visita
+- **Reseteo automático**: Al presionar "Empezar" se resetea la partida (puntajes a 0)
+- **Acceso a estadísticas**: Botón para ver últimas partidas desde el inicio
+- **z-index alto**: 10000 para estar sobre todo, modales en 10001
+
 ### Historial Agrupado
 - **Ventana de tiempo**: 60 segundos
 - **Criterios de agrupación**: 
@@ -157,10 +211,12 @@ Truco/
 - **Comportamiento**: Siempre abre en vista "Agrupado" por defecto
 
 ### Persistencia
-- Estado completo guardado en localStorage
+- Estado completo guardado en localStorage (LS_KEY: 'truco_anotador_v1')
+- Estadísticas en localStorage (LS_STATS_KEY: 'truco_stats_v1')
 - Historia de movimientos con timestamps
-- Nombres de equipos personalizados
-- Recuperación automática al recargar
+- Nombres de equipos personalizados (auto-uppercase)
+- Duración de partidas guardada en historial
+- **No se guarda** la visita a pantalla de bienvenida (siempre aparece)
 
 ### Responsive Design
 - **Desktop**: 980px max-width, layout horizontal
@@ -189,43 +245,35 @@ Truco/
 4. Confirmar instalación
 5. La app aparecerá en el Menú Inicio con íconos optimizados
 
-## 🛠️ Scripts de Utilidad
-
-### Generar Íconos PWA
-```powershell
-Get-Content .\create-icons.ps1 | powershell -
-```
-Genera automáticamente:
-- icon-44x44.png (Windows taskbar)
-- icon-150x150.png (Windows medium tile)
-- icon-310x310.png (Windows large tile)
-
-### Generar Favicon
-```powershell
-Get-Content .\create-favicon.ps1 | powershell -
-```
-Crea favicon.ico de 32x32 con alta calidad.
-
 ## 📝 Notas Adicionales
 
 - **Meta predeterminada**: 30 puntos
-- **Nombres por defecto**: "NOSOTROS" y "ELLOS"
+- **Nombres por defecto**: "NOSOTROS" y "ELLOS" (siempre en MAYÚSCULAS)
 - **Guardado automático**: Cada acción se persiste inmediatamente
 - **Separador dinámico**: Solo aparece cuando algún equipo supera 15 puntos
 - **Historial inteligente**: Default siempre en vista "Agrupado"
 - **Timestamps**: Formato HH:MM:SS para cada acción
+- **Duración**: Se trackea desde el inicio hasta que alguien gana
+- **Pantalla inicial**: Aparece siempre al recargar la app
 - **Optimización**: Animaciones a 60fps con will-change
-- **Accesibilidad**: Min-width 44px en todos los touch targets
+- **Accesibilidad**: Touch targets de 56x56px (superior a los 44px recomendados)
+- **Layout responsivo**: Header fijo, scroll solo en tally
+- **Sin footer**: Espacio completo para el juego
+- **Bloqueo post-victoria**: No se pueden sumar puntos después de ganar hasta resetear
 
 ## 🎯 Próximas Mejoras Potenciales
 
 - [x] Service Worker para funcionamiento offline completo ✅
 - [x] Sistema de actualización automática con notificaciones ✅
-- [ ] Sincronización entre dispositivos
-- [ ] Estadísticas de partidas jugadas
+- [x] Estadísticas simplificadas con últimas partidas ✅
+- [x] Sistema de duración de partidas ✅
+- [x] Pantalla de bienvenida persistente ✅
+- [x] Layout optimizado con scroll solo en tally ✅
+- [x] Touch targets de 56x56px ✅
+- [x] Safe area insets para iOS ✅
+- [ ] Estadísticas avanzadas (win rate, promedios, gráficos)
 - [ ] Temas personalizables (claro/oscuro)
 - [ ] Sonidos de feedback
-- [ ] Modo multijugador en tiempo real
 - [ ] Export/Import de historial
 - [ ] Screenshots para manifest.json
 

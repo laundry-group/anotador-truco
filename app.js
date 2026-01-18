@@ -1,6 +1,6 @@
-const LS_KEY = 'truco_anotador_v1'
+const LS_KEY = 'truco_anotador_v2'
 const LS_WELCOME_KEY = 'truco_welcome_shown'
-const LS_STATS_KEY = 'truco_stats_v1'
+const LS_STATS_KEY = 'truco_stats_v2'
 
 const defaultState = () => ({
   teams: [ { name: 'NOSOTROS', score: 0 }, { name: 'ELLOS', score: 0 } ],
@@ -21,7 +21,7 @@ function initWelcomeScreen() {
   welcomeScreen.style.display = 'flex'
   
   startBtn.addEventListener('click', () => {
-    // Resetear partida cuando se presiona "Empezar"
+    // Resetear partida cuando se presiona "Iniciar Partida"
     reset()
     
     welcomeScreen.style.animation = 'fadeOut 0.4s ease-out forwards'

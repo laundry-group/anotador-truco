@@ -1,6 +1,6 @@
 {
   "name": "Anotador de Truco - Laundry Garage",
-  "short_name": "Truco Laundry Garage",
+  "short_name": "Anotador Truco",
   "description": "Anotador de Truco con papas fritas",
   "start_url": "./index.html",
   "display": "standalone",
