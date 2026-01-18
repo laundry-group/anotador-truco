@@ -22,7 +22,7 @@
   <link rel="apple-touch-icon" sizes="167x167" href="assets/apple-touch-icon-167x167.png" />
   
   <!-- Android -->
-  <link rel="manifest" href="manifest.json" />
+  <link rel="manifest" href="manifest.json?v=2.2.0" />
   
   <link rel="stylesheet" href="style.css">
   
@@ -64,25 +64,66 @@
         }
       });
       
-      // Para iOS Safari: mostrar el botón después de 3 segundos si no se disparó beforeinstallprompt
+      // Para iOS Safari: configurar modal de instrucciones
       setTimeout(() => {
         const installBtn = document.getElementById('install-pwa-btn');
-        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        
+        // Detección más precisa de iOS
+        const isIOS = (() => {
+          const ua = navigator.userAgent;
+          const isAppleDevice = /iPad|iPhone|iPod/.test(ua);
+          const isNotWindows = !/Win/.test(ua);
+          const isNotAndroid = !/Android/.test(ua);
+          const isSafari = /Safari/.test(ua) && !/Chrome/.test(ua) && !/CriOS/.test(ua);
+          return isAppleDevice && isNotWindows && isNotAndroid && !window.MSStream;
+        })();
+        
         const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
         
-        // Si es iOS, no está instalado, y no se mostró el botón, mostrar instrucciones
-        if (isIOS && !isStandalone && installBtn && installBtn.style.display === 'none') {
-          console.log('📱 iOS detectado - mostrando instrucciones');
-          installBtn.innerHTML = '<span style="font-size:20px;">📲</span><span>Instalar: Compartir → Añadir a inicio</span>';
+        console.log('🔍 Detección:', { isIOS, isStandalone, hasDeferredPrompt: !!deferredPrompt, userAgent: navigator.userAgent });
+        
+        // Si es iOS, no está instalado, configurar botón para mostrar instrucciones
+        if (isIOS && !isStandalone && installBtn) {
+          console.log('📱 iOS detectado - configurando modal de instrucciones');
           installBtn.style.display = 'flex';
-          installBtn.style.background = '#007aff';
-          installBtn.style.pointerEvents = 'none'; // No clickeable, solo informativo
+          installBtn.innerHTML = '<span style="font-size:24px;">📱</span><span>Instalar App</span>';
+          
+          installBtn.addEventListener('click', () => {
+            showIOSInstallInstructions();
+          });
         }
-        // Si no es iOS y el botón sigue oculto, puede que la PWA ya esté instalada
-        else if (!isStandalone && installBtn && installBtn.style.display === 'none' && !deferredPrompt) {
+        // Si no es iOS, está instalado, o no hay soporte, ocultar botón si no se mostró por beforeinstallprompt
+        else if ((isStandalone || (!deferredPrompt && !isIOS)) && installBtn) {
+          installBtn.style.display = 'none';
           console.log('ℹ️ PWA ya instalada o navegador no soporta instalación');
         }
-      }, 3000);
+      }, 1500);
+      
+      // Mostrar modal con instrucciones para iOS
+      function showIOSInstallInstructions() {
+        const modal = document.createElement('div');
+        modal.id = 'ios-install-modal';
+        modal.innerHTML = `
+          <div style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:10001;animation:fadeIn 0.3s ease-out;">
+            <div style="background:#fff;border-radius:16px;padding:32px;max-width:90%;max-width:400px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,0.4);">
+              <div style="font-size:64px;margin-bottom:16px;">📱</div>
+              <h3 style="font-size:22px;font-weight:700;color:#333;margin:0 0 16px;">Instalar en iOS</h3>
+              <div style="text-align:left;color:#666;line-height:1.8;margin-bottom:24px;">
+                <p style="margin:0 0 12px;font-size:15px;"><strong>1.</strong> Tocá el botón <strong>Compartir</strong> <span style="font-size:18px;">⎙</span> en la barra inferior de Safari</p>
+                <p style="margin:0 0 12px;font-size:15px;"><strong>2.</strong> Deslizá hacia abajo y tocá <strong>"Añadir a inicio"</strong> <span style="font-size:18px;">➕</span></p>
+                <p style="margin:0;font-size:15px;"><strong>3.</strong> Confirmá tocando <strong>"Añadir"</strong></p>
+              </div>
+              <button id="close-ios-modal" style="background:#007aff;color:#fff;border:none;padding:14px 32px;border-radius:10px;font-weight:700;cursor:pointer;font-size:16px;width:100%;min-height:48px;">Entendido</button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(modal);
+        
+        document.getElementById('close-ios-modal').addEventListener('click', () => {
+          modal.style.animation = 'fadeOut 0.3s ease-out';
+          setTimeout(() => modal.remove(), 300);
+        });
+      }
 
       // Detectar cuando la PWA se instaló exitosamente
       window.addEventListener('appinstalled', () => {
@@ -185,6 +226,28 @@
   </script>
 </head>
 <body>
+  <!-- Pantalla de Bienvenida -->
+  <div id="welcome-screen" class="welcome-screen">
+    <div class="welcome-content">
+      <img src="assets/logo_laundry_truco.png" alt="Truco Laundry" class="welcome-logo">
+      <h1 class="welcome-title">Anotador de Truco</h1>
+      <p class="welcome-description">
+        Llevá el registro de tus partidas de truco de forma simple y rápida. 
+        Anotá puntos con un toque, revisá el historial completo y personalizá 
+        los nombres de los equipos. ¡A jugar!
+      </p>
+      <button id="install-pwa-btn" class="install-pwa-btn">
+        <span style="font-size:24px;">📱</span>
+        <span>Instalar App</span>
+      </button>
+      <button id="welcome-stats-btn" class="welcome-stats-btn">
+        <span style="font-size:24px;">🏆</span>
+        <span>Últimas Partidas</span>
+      </button>
+      <button id="start-btn" class="welcome-btn">Iniciar Partida</button>
+    </div>
+  </div>
+
   <main class="container">
     <header>
       <div class="header-left">
@@ -229,10 +292,6 @@
 
     <section class="actions">
       <!-- meta de puntos removida por solicitud -->
-      <button id="install-pwa-btn" style="display:none;background:#4caf50;color:#fff;border:none;padding:12px 24px;border-radius:8px;font-weight:700;cursor:pointer;font-size:14px;margin:16px auto;box-shadow:0 4px 8px rgba(0,0,0,0.2);transition:all 0.3s;align-items:center;justify-content:center;gap:8px;max-width:300px;">
-        <span style="font-size:20px;">📱</span>
-        <span>Agregar a inicio</span>
-      </button>
     </section>
 
     <footer>
@@ -278,6 +337,7 @@
         <h3 id="win-title">Ganó el equipo</h3>
       </div>
       <div class="win-body">
+        <p id="win-duration" class="win-duration"></p>
         <p id="win-message">¿Jugamos de nuevo?</p>
         <div class="win-buttons">
           <button id="win-yes" class="btn-primary">Si</button>
@@ -304,6 +364,22 @@
     </div>
   </div>
 
+  <!-- Stats modal -->
+  <div id="stats-modal" class="modal" aria-hidden="true">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content stats-modal-content">
+      <div class="modal-header">
+        <h3><span style="font-size:32px;margin-right:8px;vertical-align:middle;">🏆</span>ÚLTIMAS PARTIDAS</h3>
+        <div class="modal-actions">
+          <button id="close-stats" title="Cerrar">✕</button>
+        </div>
+      </div>
+      <div class="modal-body stats-body">
+        <div id="stats-content"></div>
+      </div>
+    </div>
+  </div>
+
   <!-- Side menu -->
   <div id="side-menu" class="side-menu" aria-hidden="true">
     <div class="side-backdrop" data-role="backdrop"></div>
@@ -311,7 +387,8 @@
       <button id="menu-close" class="menu-close">✕</button>
       <ul class="side-list">
         <li><button id="menu-history" class="menu-item"><span class="menu-icon"><img src="assets/var.svg" alt="Historial" style="width:40px;height:40px;"></span>IR AL VAR</button></li>
-        <li><button id="menu-reset" class="menu-item"><span class="menu-icon"><img src="assets/restart.png" alt="Reiniciar" style="width:40px;height:40px;"></span>REINICIAR</button></li>
+        <li><button id="menu-stats" class="menu-item"><span class="menu-icon" style="font-size:40px;">🏆</span>ÚLTIMAS PARTIDAS</button></li>
+        <li><button id="menu-reset" class="menu-item"><span class="menu-icon" style="font-size:40px;">🔄</span>REINICIAR</button></li>
       </ul>
     </nav>
   </div>

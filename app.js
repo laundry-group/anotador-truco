@@ -1,12 +1,49 @@
 const LS_KEY = 'truco_anotador_v1'
+const LS_WELCOME_KEY = 'truco_welcome_shown'
+const LS_STATS_KEY = 'truco_stats_v1'
 
 const defaultState = () => ({
   teams: [ { name: 'NOSOTROS', score: 0 }, { name: 'ELLOS', score: 0 } ],
   history: [],
-  target: 30
+  target: 30,
+  startTime: Date.now()
 })
 
 let state = loadState()
+
+// Manejar pantalla de bienvenida
+function initWelcomeScreen() {
+  const welcomeScreen = document.getElementById('welcome-screen')
+  const startBtn = document.getElementById('start-btn')
+  const welcomeStatsBtn = document.getElementById('welcome-stats-btn')
+  
+  // Siempre mostrar la pantalla de bienvenida al cargar
+  welcomeScreen.style.display = 'flex'
+  
+  startBtn.addEventListener('click', () => {
+    // Resetear partida cuando se presiona "Empezar"
+    reset()
+    
+    welcomeScreen.style.animation = 'fadeOut 0.4s ease-out forwards'
+    setTimeout(() => {
+      welcomeScreen.style.display = 'none'
+    }, 400)
+  })
+  
+  // Abrir estadísticas desde la pantalla de bienvenida
+  if (welcomeStatsBtn) {
+    welcomeStatsBtn.addEventListener('click', () => {
+      openStatsModal()
+    })
+  }
+}
+
+// Ejecutar cuando el DOM esté listo
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initWelcomeScreen)
+} else {
+  initWelcomeScreen()
+}
 
 // DOM
 const scoreEls = [document.getElementById('score-0'), document.getElementById('score-1')]
@@ -25,6 +62,39 @@ function loadState(){
 
 function saveState(){
   localStorage.setItem(LS_KEY, JSON.stringify(state))
+}
+
+function loadStats(){
+  try{
+    const raw = localStorage.getItem(LS_STATS_KEY)
+    if(raw) return JSON.parse(raw)
+  }catch(e){console.warn('No se pudo leer estadísticas',e)}
+  return { matches: [] }
+}
+
+function saveStats(stats){
+  localStorage.setItem(LS_STATS_KEY, JSON.stringify(stats))
+}
+
+function saveMatchResult(winnerIdx){
+  const stats = loadStats()
+  const endTime = Date.now()
+  const startTime = state.startTime || endTime
+  const durationMinutes = Math.round((endTime - startTime) / 60000) // Convertir a minutos
+  
+  const match = {
+    date: new Date().toISOString(),
+    winner: state.teams[winnerIdx].name,
+    winnerScore: state.teams[winnerIdx].score,
+    loser: state.teams[1 - winnerIdx].name,
+    loserScore: state.teams[1 - winnerIdx].score,
+    totalMoves: state.history.length,
+    target: state.target,
+    duration: durationMinutes
+  }
+  stats.matches.push(match)
+  saveStats(stats)
+  console.log('✅ Partida guardada en estadísticas (Duración: ' + durationMinutes + ' min)')
 }
 
 function render(){
@@ -47,9 +117,37 @@ function pushHistory(entry){
 }
 
 function addPoints(teamIndex, pts){
+  // Si la partida ya terminó (hay un ganador), no permitir sumar más puntos
+  if(state._winnerShown) {
+    return
+  }
+  
   const before = JSON.parse(JSON.stringify(state))
-  state.teams[teamIndex].score = Math.max(0, state.teams[teamIndex].score + pts)
+  const currentScore = state.teams[teamIndex].score
+  const target = Number(state.target)
+  
+  // Si ya alcanzó la meta, no permitir agregar más puntos
+  if(currentScore >= target) {
+    return
+  }
+  
+  const newScore = Math.max(0, currentScore + pts)
+  
+  // Si el nuevo puntaje alcanza o supera la meta, ajustar exactamente a la meta
+  if(newScore >= target) {
+    state.teams[teamIndex].score = target
+    pushHistory({time: Date.now(), team: teamIndex, pts: target - currentScore})
+    saveState()
+    render()
+    checkWinner()  // Llamar inmediatamente cuando alcanza el target
+    state._lastBefore = before
+    return
+  }
+  
+  // Puntaje normal (menor al target)
+  state.teams[teamIndex].score = newScore
   pushHistory({time: Date.now(), team: teamIndex, pts})
+  
   saveState()
   render()
   checkWinner()
@@ -72,6 +170,8 @@ function undo(){
 
 function reset(){
   state = defaultState()
+  state.startTime = Date.now() // Reiniciar contador de tiempo
+  state._winnerShown = false // Resetear flag de ganador
   saveState()
   render()
 }
@@ -269,13 +369,25 @@ function checkWinner(){
 const winModal = document.getElementById('win-modal')
 const winTitle = document.getElementById('win-title')
 const winMessage = document.getElementById('win-message')
+const winDuration = document.getElementById('win-duration')
 const winYes = document.getElementById('win-yes')
 const winNo = document.getElementById('win-no')
 
 function openWinModal(teamIdx){
   const team = state.teams[teamIdx]
   if(!winModal) return
+  
+  // Calcular duración antes de guardar
+  const endTime = Date.now()
+  const startTime = state.startTime || endTime
+  const durationMinutes = Math.round((endTime - startTime) / 60000)
+  const durationText = durationMinutes === 1 ? '1 minuto' : `${durationMinutes} minutos`
+  
+  // Guardar resultado en estadísticas
+  saveMatchResult(teamIdx)
+  
   winTitle.textContent = `${team.name} ganó el partido`
+  winDuration.textContent = `⏱️ Duración: ${durationText}`
   winMessage.textContent = '¿Jugamos de nuevo?'
   winModal.setAttribute('aria-hidden','false')
 }
@@ -310,7 +422,9 @@ document.querySelectorAll('[data-add]').forEach(btn=>{
 
 nameInputs.forEach((inp,i)=>{
   inp.addEventListener('input', ()=>{
-    state.teams[i].name = inp.value || (`Equipo ${i+1}`)
+    const newName = inp.value || (`Equipo ${i+1}`)
+    state.teams[i].name = newName.toUpperCase()
+    inp.value = state.teams[i].name
     saveState()
     renderHistory()
   })
@@ -523,6 +637,98 @@ function initTallyListeners(){
       addPoints(idx, 1)
     })
   })
+}
+
+// Stats modal handling
+const statsModal = document.getElementById('stats-modal')
+const closeStatsBtn = document.getElementById('close-stats')
+const menuStatsBtn = document.getElementById('menu-stats')
+
+function openStatsModal(){
+  if(!statsModal) return
+  const stats = loadStats()
+  renderStats(stats)
+  statsModal.setAttribute('aria-hidden','false')
+  if(sideMenu) sideMenu.setAttribute('aria-hidden','true')
+}
+
+function closeStatsModal(){
+  if(!statsModal) return
+  statsModal.setAttribute('aria-hidden','true')
+}
+
+function renderStats(stats){
+  const container = document.getElementById('stats-content')
+  if(!container) return
+  
+  if(stats.matches.length === 0){
+    container.innerHTML = `
+      <div style="text-align:center;padding:48px 24px;color:#666;">
+        <div style="font-size:64px;margin-bottom:16px;">🏆</div>
+        <p style="font-size:18px;font-weight:600;margin-bottom:8px;">No hay partidas registradas</p>
+        <p style="font-size:14px;">Jugá y completá partidas para ver el historial</p>
+      </div>
+    `
+    return
+  }
+  
+  // Mostrar solo últimas partidas
+  let html = `
+    <div class="recent-matches">
+  `
+  
+  const recentMatches = stats.matches.slice(-5).reverse()
+  recentMatches.forEach(match => {
+    const date = new Date(match.date)
+    const dateStr = date.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: '2-digit' })
+    const timeStr = date.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })
+    const duration = match.duration || 0
+    const durationText = duration === 1 ? '1 minuto' : `${duration} minutos`
+    
+    html += `
+      <div class="match-card">
+        <div class="match-date">${dateStr} ${timeStr}</div>
+        <div class="match-result">
+          <span class="match-winner">🏆 ${match.winner}</span>
+          <span class="match-score">${match.winnerScore} - ${match.loserScore}</span>
+        </div>
+        <div class="match-loser">${match.loser}</div>
+        <div class="match-duration">⏱️ ${durationText}</div>
+      </div>
+    `
+  })
+  
+  html += `</div>`
+  
+  // Botón para limpiar estadísticas
+  html += `
+    <div style="text-align:center;margin-top:32px;">
+      <button id="clear-stats-btn" class="btn-ghost" style="min-height:44px;padding:10px 24px;">
+        Limpiar Estadísticas
+      </button>
+    </div>
+  `
+  
+  container.innerHTML = html
+  
+  // Agregar listener al botón de limpiar
+  const clearBtn = document.getElementById('clear-stats-btn')
+  if(clearBtn){
+    clearBtn.addEventListener('click', () => {
+      if(confirm('¿Estás seguro de borrar todas las estadísticas?')){
+        saveStats({ matches: [] })
+        renderStats({ matches: [] })
+      }
+    })
+  }
+}
+
+if(closeStatsBtn) closeStatsBtn.addEventListener('click', closeStatsModal)
+if(menuStatsBtn) menuStatsBtn.addEventListener('click', openStatsModal)
+
+// Close modals on backdrop click
+if(statsModal){
+  statsModal.querySelector('.modal-backdrop').addEventListener('click', closeStatsModal)
 }
 
 // Reset confirmation modal
