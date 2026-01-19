@@ -229,7 +229,7 @@
   <!-- Pantalla de Bienvenida -->
   <div id="welcome-screen" class="welcome-screen">
     <div class="welcome-content">
-      <img src="assets/logo_laundry_truco.png" alt="Truco Laundry" class="welcome-logo">
+      <img src="assets/logo_laundry_truco_1.png" alt="Truco Laundry" class="welcome-logo">
       <h1 class="welcome-title">Anotador de Truco</h1>
       <p class="welcome-description">
         Llevá el registro de tus partidas de truco de forma simple y rápida. 
@@ -266,12 +266,11 @@
           <input class="team-name" value="NOSOTROS">
         </div>
         <div class="team-body">
-          <div class="score" id="score-0">0</div>
-          <div class="tally" data-team="0" id="tally-0"></div>
-          <div class="controls">
-            <button data-add="-1">−</button>
-            <button data-add="1">+</button>
+          <div class="score-container">
+            <div class="score" id="score-0">0</div>
+            <div class="score-label" id="score-label-0">MALAS</div>
           </div>
+          <div class="tally clickeable" data-team="0" id="tally-0"></div>
         </div>
       </div>
 
@@ -280,15 +279,19 @@
           <input class="team-name" value="ELLOS">
         </div>
         <div class="team-body">
-          <div class="score" id="score-1">0</div>
-          <div class="tally" data-team="1" id="tally-1"></div>
-          <div class="controls">
-            <button data-add="-1">−</button>
-            <button data-add="1">+</button>
+          <div class="score-container">
+            <div class="score" id="score-1">0</div>
+            <div class="score-label" id="score-label-1">MALAS</div>
           </div>
+          <div class="tally clickeable" data-team="1" id="tally-1"></div>
         </div>
       </div>
     </section>
+
+    <footer class="footer-controls">
+      <button class="btn-restar" data-team="0" data-add="-1">−</button>
+      <button class="btn-restar" data-team="1" data-add="-1">−</button>
+    </footer>
 
     <section class="actions">
       <!-- meta de puntos removida por solicitud -->
@@ -355,6 +358,23 @@
         <div class="win-buttons">
           <button id="reset-yes" class="btn-primary">Si</button>
           <button id="reset-no" class="btn-ghost">No</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Clear stats modal -->
+  <div id="clear-stats-modal" class="modal win-modal" aria-hidden="true">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content win-content">
+      <div class="win-header">
+        <h3>Limpiar Estadísticas</h3>
+      </div>
+      <div class="win-body">
+        <p>¿Estás seguro de borrar todas las estadísticas?</p>
+        <div class="win-buttons">
+          <button id="clear-stats-yes" class="btn-primary">Si</button>
+          <button id="clear-stats-no" class="btn-ghost">No</button>
         </div>
       </div>
     </div>

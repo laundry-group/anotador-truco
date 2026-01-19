@@ -47,6 +47,8 @@ if (document.readyState === 'loading') {
 
 // DOM
 const scoreEls = [document.getElementById('score-0'), document.getElementById('score-1')]
+const scoreLabelEls = [document.getElementById('score-label-0'), document.getElementById('score-label-1')]
+const scoreContainerEls = [document.querySelector('.team[data-team="0"] .score-container'), document.querySelector('.team[data-team="1"] .score-container')]
 const nameInputs = Array.from(document.querySelectorAll('.team-name'))
 // if page-history list removed, fall back to modal list
 const historyList = document.getElementById('history-list') || document.getElementById('modal-history-list')
@@ -99,7 +101,27 @@ function saveMatchResult(winnerIdx){
 
 function render(){
   state.teams.forEach((t,i)=>{
-    scoreEls[i].textContent = t.score
+    const score = t.score
+    // En Truco Argentino: 0-15 son MALAS, 16-30 son BUENAS
+    let displayScore = score
+    let label = 'MALAS'
+    let isBuenas = false
+    
+    if(score > 15) {
+      displayScore = score - 15
+      label = 'BUENAS'
+      isBuenas = true
+    }
+    
+    scoreEls[i].textContent = displayScore
+    if(scoreLabelEls[i]) scoreLabelEls[i].textContent = label
+    
+    // Actualizar clases del contenedor
+    if(scoreContainerEls[i]) {
+      scoreContainerEls[i].classList.remove('malas', 'buenas')
+      scoreContainerEls[i].classList.add(isBuenas ? 'buenas' : 'malas')
+    }
+    
     nameInputs[i].value = t.name.toUpperCase()
   })
   if(targetInput) targetInput.value = state.target
@@ -191,6 +213,21 @@ function renderHistory(){
   }
   
   tbody.innerHTML = ''
+  
+  // Si no hay historial, mostrar mensaje
+  if(!state.history || state.history.length === 0) {
+    const tr = document.createElement('tr')
+    const td = document.createElement('td')
+    td.colSpan = 4
+    td.style.textAlign = 'center'
+    td.style.padding = '40px 20px'
+    td.style.color = '#999'
+    td.style.fontStyle = 'italic'
+    td.textContent = 'Aún no hay puntos anotados en esta partida'
+    tr.appendChild(td)
+    tbody.appendChild(tr)
+    return
+  }
   
   // Verificar si está en modo agrupado (por defecto agrupado)
   const activeTab = document.querySelector('.history-tab.active')
@@ -414,9 +451,16 @@ if(winNo) winNo.addEventListener('click', ()=>{ closeWinModal() })
 document.querySelectorAll('[data-add]').forEach(btn=>{
   btn.addEventListener('click', e=>{
     const pts = Number(btn.dataset.add)
-    const teamEl = btn.closest('.team')
-    const idx = Number(teamEl.dataset.team)
-    addPoints(idx, pts)
+    const teamIdx = Number(btn.dataset.team)
+    addPoints(teamIdx, pts)
+  })
+})
+
+// Hacer tally clickeable para sumar puntos
+document.querySelectorAll('.tally.clickeable').forEach(tally=>{
+  tally.addEventListener('click', e=>{
+    const teamIdx = Number(tally.dataset.team)
+    addPoints(teamIdx, 1)
   })
 })
 
@@ -576,14 +620,17 @@ function buildTallies(){
     tally.innerHTML = ''
 
     const score = state.teams[teamIdx]?.score || 0
-    const target = Number(state.target) || 30
-    const totalGroups = Math.max(6, Math.ceil(target / 5))
+    // Convertir score real (0-30) a score visualizado (0-15)
+    const visualScore = score > 15 ? score - 15 : score
+    
+    // Solo mostrar hasta 15 puntos (3 grupos de 5)
+    const totalGroups = 3
     for(let g=0; g<totalGroups; g++){
       const grp = document.createElement('div')
       grp.className = 'group'
       grp.dataset.g = g
       const startIdx = g*5
-      const filledInGroup = Math.max(0, Math.min(5, score - startIdx))
+      const filledInGroup = Math.max(0, Math.min(5, visualScore - startIdx))
 
       // Renderizar papafritas en marco cuadrado: top, right, bottom, left, diagonal
       const positions = ['top', 'right', 'bottom', 'left', 'diag'];
@@ -603,14 +650,6 @@ function buildTallies(){
       // if fully filled, add a class to style the diagonal strongly
       if(filledInGroup >= 5) grp.classList.add('cross')
       tally.appendChild(grp)
-      
-      // Agregar línea divisoria después del grupo que contiene el punto 15 solo si el puntaje supera 15
-      const groupEndPoint = (g + 1) * 5;
-      if(groupEndPoint === 15 && score > 15) {
-        const divider = document.createElement('div');
-        divider.className = 'tally-divider';
-        tally.appendChild(divider);
-      }
     }
     // no height adjustment: allow .tally to grow so groups keep fixed size
     // remember last rendered score for this tally
@@ -626,16 +665,6 @@ function updateTally(){
     if(prev !== t.score){
       buildTallies()
     }
-  })
-}
-
-// Attach tally click handlers (touch-friendly)
-function initTallyListeners(){
-  document.querySelectorAll('.tally').forEach(t=>{
-    t.addEventListener('click', ()=>{
-      const idx = Number(t.dataset.team)
-      addPoints(idx, 1)
-    })
   })
 }
 
@@ -715,10 +744,7 @@ function renderStats(stats){
   const clearBtn = document.getElementById('clear-stats-btn')
   if(clearBtn){
     clearBtn.addEventListener('click', () => {
-      if(confirm('¿Estás seguro de borrar todas las estadísticas?')){
-        saveStats({ matches: [] })
-        renderStats({ matches: [] })
-      }
+      openClearStatsModal()
     })
   }
 }
@@ -757,7 +783,33 @@ if(resetModal){
   if(bd) bd.addEventListener('click', closeResetModal)
 }
 
+// Clear stats confirmation modal
+const clearStatsModal = document.getElementById('clear-stats-modal')
+const clearStatsYes = document.getElementById('clear-stats-yes')
+const clearStatsNo = document.getElementById('clear-stats-no')
+
+function openClearStatsModal(){
+  if(clearStatsModal) clearStatsModal.setAttribute('aria-hidden','false')
+}
+function closeClearStatsModal(){
+  if(clearStatsModal) clearStatsModal.setAttribute('aria-hidden','true')
+}
+
+if(clearStatsYes){
+  clearStatsYes.addEventListener('click', ()=>{
+    saveStats({ matches: [] })
+    renderStats({ matches: [] })
+    closeClearStatsModal()
+  })
+}
+if(clearStatsNo){
+  clearStatsNo.addEventListener('click', closeClearStatsModal)
+}
+if(clearStatsModal){
+  const bd = clearStatsModal.querySelector('.modal-backdrop')
+  if(bd) bd.addEventListener('click', closeClearStatsModal)
+}
+
 // Inicializar
 buildTallies()
-initTallyListeners()
 render()

@@ -4,11 +4,13 @@ Aplicación web progresiva (PWA) para anotar partidas de Truco con un diseño vi
 
 ## ✨ Características Principales
 
+- **Sistema MALAS/BUENAS**: Contador visual del sistema argentino de Truco (0-15 MALAS, 16-30 BUENAS) con bordes de colores
 - **Sistema de conteo visual**: Las papas fritas forman marcos cuadrados (5 puntos por cuadrado) con su diagonal característica
+- **Tally interactivo**: Click en el área de papas para sumar 1 punto, botones "-" en footer para restar
 - **Pantalla de bienvenida**: Aparece siempre al iniciar la app con opciones de ver historial o comenzar nueva partida
 - **Seguimiento de duración**: Cada partida registra su tiempo de duración en minutos, visible al terminar y en el historial
 - **Estadísticas simplificadas**: Muestra las últimas 5 partidas con detalles completos (fecha, hora, puntajes, duración)
-- **Layout optimizado**: Header, nombres y controles fijos, scroll solo en área de tally para mejor usabilidad
+- **Layout optimizado**: Header, nombres y puntajes fijos, tally flexible sin scroll que se adapta a cualquier resolución
 - **Historial con dos vistas**:
   - **Agrupado**: Agrupa acciones de ambos equipos en ventanas de 60 segundos (una línea por minuto)
   - **Detalle**: Muestra cada acción individual con totales acumulados
@@ -37,9 +39,10 @@ Aplicación web progresiva (PWA) para anotar partidas de Truco con un diseño vi
    - Ver "Últimas Partidas" 🏆 para revisar el historial
    - Presionar "Empezar" para iniciar una nueva partida (resetea puntajes)
 4. Personalizar nombres de equipos (se convierten automáticamente a MAYÚSCULAS)
-5. Usar botones + y - para sumar/restar puntos
-6. Scroll en el área de tally cuando hay muchos puntos
-7. Acceder al menú (☰) para:
+5. **Click en el área de papas** para sumar 1 punto al equipo correspondiente
+6. Usar botones "-" en el footer para restar puntos
+7. Ver el puntaje actual con indicador MALAS (amarillo, 0-15) o BUENAS (verde, 16-30)
+8. Acceder al menú (☰) para:
    - Ver historial completo con tabs "Agrupado" y "Detalle" (IR AL VAR)
    - Ver últimas 5 partidas con duración (🏆 ÚLTIMAS PARTIDAS)
    - Reiniciar la partida (🔄 REINICIAR)
@@ -81,26 +84,36 @@ Truco/
 - **Aparece siempre**: Al recargar o entrar a la app
 - **z-index**: 10000 para estar sobre todo el contenido
 
-### Layout con Scroll Optimizado
+### Sistema MALAS/BUENAS
+- **Puntaje visual**: 0-15 puntos = MALAS, 16-30 puntos = BUENAS
+- **Indicadores de color**:
+  - MALAS: Borde amarillo (#FFD700) con label "MALAS"
+  - BUENAS: Borde verde (#4CAF50) con label "BUENAS"
+- **Display inteligente**: El tally se resetea visualmente a 1-15 al entrar en BUENAS
+- **Lógica interna**: Mantiene conteo 0-30 para estadísticas precisas
+- **Score container**: Layout horizontal con score y label en la misma línea
+
+### Layout Optimizado
 - **Header fijo**: Siempre visible en la parte superior
 - **Nombres fijos**: Los inputs de nombres permanecen accesibles
-- **Puntajes fijos**: Score siempre visible
-- **Controles fijos**: Botones +/- siempre accesibles
-- **Tally scrolleable**: Solo el área de papas fritas hace scroll
-  - Scrollbar personalizado semitransparente
-  - Desktop: max-height calc(100vh - 350px)
-  - Mobile: flex 1 con min-height 0
+- **Puntajes fijos**: Score container con MALAS/BUENAS siempre visible
+- **Tally flexible**: Se adapta automáticamente a cualquier resolución sin scroll
+  - Desktop: 135px por grupo
+  - Mobile (≤700px): 135px por grupo
+  - iPhone SE (≤380px): 100px por grupo
+  - Gap fijo de 8px (6px en móviles pequeños)
+  - Alineado al top con `justify-content: flex-start`
+- **Footer fijo**: Botones "-" (56x56px) sticky al bottom
 
 ### Papas Fritas (Tally System)
 - **Marco cuadrado**: 5 papas forman un marco (top, right, bottom, left + diagonal)
   - Papas horizontales para posiciones superior e inferior
   - Papas verticales para posiciones laterales y diagonal
-  - 40px de grosor, 150px tamaño de grupo
+  - **Tamaños porcentuales**: 30% width/height para escalar proporcionalmente
+  - Máximo 15 puntos mostrados (3 grupos de 5)
   - Animaciones de fade-in (140ms)
-- **Separador a los 15 puntos**: 
-  - Patrón de cuadrados rojos y blancos (12px cada cuadrado)
-  - 24px de altura, solo aparece cuando el puntaje supera 15
-  - flex-shrink: 0 para mantener tamaño en scroll
+- **Tally clickeable**: Click en cualquier parte del tally suma 1 punto
+- **Sin scroll**: Sizing flexible con `min(px, vh)` para ajustarse a cualquier pantalla
 
 ### Historial (VAR)
 - **Tabs personalizados**:
@@ -187,6 +200,21 @@ Truco/
 
 ## 📋 Características Técnicas
 
+### Sistema de Controles Interactivos
+- **Tally clickeable**: Evento click en `.tally.clickeable` suma 1 punto
+- **Botones restar**: Footer sticky con dos botones "-" (uno por equipo)
+- **Sin botón sumar**: Eliminado para simplificar interfaz
+- **Feedback táctil**: Transform scale(0.95) en :active
+- **Touch-action**: manipulation para evitar delays en móviles
+- **Cursor**: pointer en tally, sin efectos hover/active para evitar confusión
+
+### Sistema MALAS/BUENAS
+- **Cálculo dinámico**: `score > 15 ? 'BUENAS' : 'MALAS'` en render()
+- **Visual score**: `visualScore = score > 15 ? score - 15 : score`
+- **Clases CSS**: `.malas` (border amarillo) y `.buenas` (border verde)
+- **Score container**: Array `scoreContainerEls` para manejo de clases
+- **Labels dinámicos**: Actualización automática al cambiar de fase
+
 ### Sistema de Duración de Partidas
 - **Tracking automático**: Se registra `startTime` al iniciar/resetear partida
 - **Cálculo al terminar**: `Math.round((endTime - startTime) / 60000)` para obtener minutos
@@ -219,10 +247,12 @@ Truco/
 - **No se guarda** la visita a pantalla de bienvenida (siempre aparece)
 
 ### Responsive Design
-- **Desktop**: 980px max-width, layout horizontal
-- **Mobile (<700px)**: Split 50/50, controles optimizados
-- **Landscape (<900px)**: Max-height 85vh con scroll
-- **Touch targets**: Mínimo 44px (W3C guidelines)
+- **Desktop**: 980px max-width, layout horizontal, tally 135px
+- **Mobile (<700px)**: Split 50/50, tally 135px con gap 8px
+- **iPhone SE (<380px)**: Tally 100px con gap 5px para optimizar espacio
+- **Landscape (<900px)**: Tally 108px optimizado para orientación horizontal
+- **Touch targets**: 56x56px (superior a 44px W3C guidelines)
+- **Flexible sizing**: Usa `min(px, vh)` para adaptarse a cualquier resolución
 
 ## 🚀 Instalación como PWA
 
@@ -249,16 +279,18 @@ Truco/
 
 - **Meta predeterminada**: 30 puntos
 - **Nombres por defecto**: "NOSOTROS" y "ELLOS" (siempre en MAYÚSCULAS)
+- **Sistema MALAS/BUENAS**: Indicadores visuales 0-15 (MALAS amarillo) y 16-30 (BUENAS verde)
+- **Tally interactivo**: Click para sumar, máximo 15 papas visuales (reset visual en BUENAS)
 - **Guardado automático**: Cada acción se persiste inmediatamente
-- **Separador dinámico**: Solo aparece cuando algún equipo supera 15 puntos
 - **Historial inteligente**: Default siempre en vista "Agrupado"
 - **Timestamps**: Formato HH:MM:SS para cada acción
 - **Duración**: Se trackea desde el inicio hasta que alguien gana
 - **Pantalla inicial**: Aparece siempre al recargar la app
 - **Optimización**: Animaciones a 60fps con will-change
 - **Accesibilidad**: Touch targets de 56x56px (superior a los 44px recomendados)
-- **Layout responsivo**: Header fijo, scroll solo en tally
-- **Sin footer**: Espacio completo para el juego
+- **Layout responsivo**: Header y puntajes fijos, tally flexible sin scroll
+- **Footer sticky**: Botones "-" siempre accesibles en la parte inferior
+- **Modal de confirmación**: z-index 10002 para limpiar estadísticas (sobre modal principal)
 - **Bloqueo post-victoria**: No se pueden sumar puntos después de ganar hasta resetear
 
 ## 🎯 Próximas Mejoras Potenciales
@@ -311,4 +343,4 @@ Este proyecto está bajo uso personal/educativo.
 
 ---
 
-**Desarrollado con ❤️ por Laundry Garage** | Truco Score Keeper v2.0
+**Desarrollado con ❤️ por Laundry Garage** | Truco Score Keeper v2.1
